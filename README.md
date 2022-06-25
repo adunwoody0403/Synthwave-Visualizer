@@ -135,7 +135,6 @@ public:
 	// Actor
 	virtual void Tick(float DeltaTime) override;
 	virtual void BeginDestroy() override;
-	//void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 protected:
 	// Called when the game starts or when spawned
@@ -245,9 +244,9 @@ void FTrackData::UpdateSpectrum(AMusicController* musicController)
 {
 	if (!isArmed) return;
 
-	spectrum = musicController->CalculateFrequencySpectrum(trackInstance, musicController->GetCurrentSongTime()/* + timeOffset*/, spectrumTimeSlice, spectrumResolution);
+	spectrum = musicController->CalculateFrequencySpectrum(trackInstance, musicController->GetCurrentSongTime(), spectrumTimeSlice, spectrumResolution);
 
-	for (int i = 0; i < /*spectrumResolution*/spectrum.Num(); i++)
+	for (int i = 0; i < spectrum.Num(); i++)
 	{
 		float frequency = FMath::Clamp(spectrum[i], -spectrumClamp, spectrumClamp);
 		if (frequency > maxFrequency)
@@ -283,8 +282,6 @@ float FTrackData::EvaluateNormalizedFrequency(float frequencyRange)
 {
 	if (!isArmed) return 0.0f;
 
-	//float clampedFrequency = EvaluateClampedFrequency(frequencyRange);
-	//return (clampedFrequency - minFrequency) / (maxFrequency - minFrequency);
 	float clampedFrequency = EvaluateClampedFrequency(frequencyRange);
 	float normalizedFrequency = (clampedFrequency + spectrumClamp) / (2 * spectrumClamp);
 	float powerFrequency = FMath::Pow(normalizedFrequency, spectrumPowerFactor);
@@ -329,7 +326,6 @@ void AMusicController::PlayTrack(float startPercent, float fadeInDuration)
 	initialPlaybackPercent = songPercent;
 
 	AudioComponent->Sound = Cast<USoundBase>(MasterTrack.trackInstance);
-	//AudioComponent->Play(songTime);
 	AudioComponent->FadeIn(fadeInDuration, 1.0f, songTime, EAudioFaderCurve::Linear);
 	OnTrackStart.Broadcast();
 	UE_LOG(LogTemp, Log, TEXT("(%s): Playing track..."), *GetName());
@@ -347,7 +343,6 @@ void AMusicController::ResumeTrack()
 	if (!isArmed) return;
 
 	isPlayingTrack = true;
-	//AudioComponent->Play(songTime);
 	AudioComponent->SetPaused(false);
 }
 
@@ -548,8 +543,6 @@ void AMusicController::DoDebugLogic()
 	FVector startPos = GetActorLocation();
 	for (int i = 1; i < MasterTrack.spectrumResolution; i++)
 	{
-		//float freq1 = FMath::Pow(MasterTrack.spectrum[i - 1], debugPowerFactor) * debugFrequencyHeightScale;
-		//float freq2 = FMath::Pow(MasterTrack.spectrum[i], debugPowerFactor) * debugFrequencyHeightScale;
 		float freq1Indx = (i - 1.0f) / (float)MasterTrack.spectrumResolution;
 		float freq1 = MasterTrack.EvaluateNormalizedFrequency(freq1Indx) * debugFrequencyHeightScale;
 		float freq2Indx = (float)i / (float)MasterTrack.spectrumResolution;
@@ -570,8 +563,6 @@ void AMusicController::DoDebugLogic()
 		if (!detailTracks[i].isArmed) continue;
 		for (int j = 1; j < MasterTrack.spectrumResolution; j++)
 		{
-			//float freq1 = FMath::Pow(detailTracks[i].spectrum[j - 1], debugPowerFactor) * debugFrequencyHeightScale;
-			//float freq2 = FMath::Pow(detailTracks[i].spectrum[j], debugPowerFactor) * debugFrequencyHeightScale;
 			float freq1Indx = (j - 1.0f) / (float)detailTracks[i].spectrumResolution;
 			float freq1 = detailTracks[i].EvaluateNormalizedFrequency(freq1Indx) * debugFrequencyHeightScale;
 			float freq2Indx = (float)j / (float)detailTracks[i].spectrumResolution;
@@ -590,7 +581,6 @@ void AMusicController::DoDebugLogic()
 
 	DrawDebugLine(GetWorld(), startPos, startPos + (debugLineSegmentDistance * MasterTrack.spectrumResolution * FVector::ForwardVector), FColor::Black, false, 0.0f, 1.0f, debugLineThickness);
 	DrawDebugLine(GetWorld(), startPos + (FVector::UpVector * debugFrequencyHeightScale), startPos + (debugLineSegmentDistance * MasterTrack.spectrumResolution * FVector::ForwardVector) + (FVector::UpVector * debugFrequencyHeightScale), FColor::Black, false, 0.0f, 1.0f, debugLineThickness);
-	//DrawDebugLine(GetWorld(), startPos + (debugLineSegmentDistance * MasterTrack.spectrumResolution * debugSpectrumPosition * FVector::ForwardVector), startPos + (debugLineSegmentDistance * MasterTrack.spectrumResolution * debugSpectrumPosition * FVector::ForwardVector) + (FVector::UpVector * debugFrequencyHeightScale), FColor::Black, false, 0.0f, 1.0f, debugLineThickness);
 }
 ```
 
